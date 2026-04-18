@@ -177,7 +177,10 @@
       font-size: 14px;
       font-family: 'Courier New', monospace;
       color: #222;
-      word-break: break-all;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
     }
 
     .type-badge {
@@ -227,7 +230,6 @@
     .row-actions {
       display: flex;
       gap: 8px;
-      justify-content: flex-end;
     }
 
     .copy-btn {
