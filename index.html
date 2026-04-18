@@ -246,6 +246,28 @@
       border-bottom: 2px solid #e0e0e0;
     }
 
+    .delete-all-btn {
+      padding: 5px 12px;
+      background: #fff;
+      color: #ef4444;
+      border: 1.5px solid #ef4444;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .delete-all-btn:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .delete-all-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
     .tab-btn {
       padding: 10px 24px;
       background: none;
@@ -285,10 +307,7 @@
     <div class="tab-panel active" id="panel-list">
       <div class="status-bar">
         <div class="count-label">件数: <span id="countLabel">0</span></div>
-        <div class="sync-indicator">
-          <div class="sync-dot" id="syncDot"></div>
-          <span id="syncLabel" style="color:#aaa;font-size:12px;">接続中...</span>
-        </div>
+        <button class="delete-all-btn" id="deleteAllBtn" onclick="deleteAll()">全件削除</button>
       </div>
       <div class="email-list" id="emailList">
         <div class="empty-state">メールアドレスがありません</div>
@@ -312,6 +331,7 @@
       collection,
       addDoc,
       deleteDoc,
+      getDocs,
       doc,
       onSnapshot,
       query,
@@ -399,6 +419,23 @@
     });
 
     // グローバル関数として公開
+    window.deleteAll = async function() {
+      if (!confirm('全件削除しますか？')) return;
+      const btn = document.getElementById('deleteAllBtn');
+      btn.disabled = true;
+      setSyncing();
+      try {
+        const snapshot = await getDocs(query(emailsRef, orderBy("createdAt", "asc")));
+        const batch = writeBatch(db);
+        snapshot.docs.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+      } catch (e) {
+        showError('削除に失敗しました: ' + e.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
     window.switchTab = function(tab) {
       document.querySelectorAll('.tab-btn').forEach((btn, i) => {
         btn.classList.toggle('active', (i === 0 && tab === 'list') || (i === 1 && tab === 'add'));
