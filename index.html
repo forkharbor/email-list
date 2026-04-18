@@ -180,9 +180,54 @@
       word-break: break-all;
     }
 
+    .type-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .type-badge.email {
+      background: #e8edff;
+      color: #4a6cf7;
+    }
+
+    .type-badge.phone {
+      background: #e6faf0;
+      color: #16a34a;
+    }
+
+    .type-toggle {
+      display: flex;
+      gap: 0;
+      margin-bottom: 14px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .type-toggle button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      color: #aaa;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .type-toggle button.active {
+      background: #4a6cf7;
+      color: #fff;
+    }
+
     .row-actions {
       display: flex;
       gap: 8px;
+      justify-content: flex-end;
     }
 
     .copy-btn {
@@ -302,10 +347,8 @@
 </head>
 <body>
   <div class="container">
-    <h1>メールリスト管理</h1>
-
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('list')">メール一覧</button>
+      <button class="tab-btn active" onclick="switchTab('list')">一覧</button>
       <button class="tab-btn" onclick="switchTab('add')">追加</button>
     </div>
 
@@ -315,14 +358,18 @@
         <button class="delete-all-btn" id="deleteAllBtn" onclick="deleteAll()">全件削除</button>
       </div>
       <div class="email-list" id="emailList">
-        <div class="empty-state">メールアドレスがありません</div>
+        <div class="empty-state">データがありません</div>
       </div>
     </div>
 
     <div class="tab-panel" id="panel-add">
       <div class="input-section">
-        <label>メールアドレスを貼り付け（複数行対応）</label>
-        <textarea id="emailInput" placeholder="example1@gmail.com&#10;example2@yahoo.co.jp&#10;example3@outlook.com"></textarea>
+        <div class="type-toggle">
+          <button id="typeEmail" class="active" onclick="setType('email')">メールアドレス</button>
+          <button id="typePhone" onclick="setType('phone')">電話番号</button>
+        </div>
+        <label id="inputLabel">メールアドレスを貼り付け（複数行対応）</label>
+        <textarea id="emailInput" placeholder="example1@gmail.com&#10;example2@yahoo.co.jp"></textarea>
         <div class="error-msg" id="errorMsg"></div>
         <button class="add-btn" id="addBtn" onclick="addEmails()">追加</button>
       </div>
@@ -376,21 +423,25 @@
     function render(emails) {
       countLabel.textContent = emails.length;
       if (emails.length === 0) {
-        emailList.innerHTML = '<div class="empty-state">メールアドレスがありません</div>';
+        emailList.innerHTML = '<div class="empty-state">データがありません</div>';
         return;
       }
-      emailList.innerHTML = emails.map((item, i) => `
+      emailList.innerHTML = emails.map((item, i) => {
+        const type = item.type || 'email';
+        const label = type === 'phone' ? '電話' : 'メール';
+        return `
         <div class="email-row" id="row-${item.id}">
           <div class="email-top">
             <div class="email-index">${i + 1}</div>
+            <span class="type-badge ${type}">${label}</span>
             <div class="email-text">${escapeHtml(item.email)}</div>
           </div>
           <div class="row-actions">
             <button class="copy-btn" id="copy-${item.id}" onclick="copyEmail('${item.id}', '${escapeAttr(item.email)}')">コピー</button>
             <button class="delete-btn" onclick="deleteEmail('${item.id}')">削除</button>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     }
 
     function escapeHtml(str) {
@@ -436,6 +487,19 @@
       document.getElementById('panel-add').classList.toggle('active', tab === 'add');
     };
 
+    let currentType = 'email';
+
+    window.setType = function(type) {
+      currentType = type;
+      document.getElementById('typeEmail').classList.toggle('active', type === 'email');
+      document.getElementById('typePhone').classList.toggle('active', type === 'phone');
+      document.getElementById('inputLabel').textContent =
+        type === 'phone' ? '電話番号を貼り付け（複数行対応）' : 'メールアドレスを貼り付け（複数行対応）';
+      document.getElementById('emailInput').placeholder =
+        type === 'phone' ? '090-1234-5678\n080-9876-5432' : 'example1@gmail.com\nexample2@yahoo.co.jp';
+      document.getElementById('emailInput').value = '';
+    };
+
     window.addEmails = async function() {
       const input = document.getElementById("emailInput");
       const raw = input.value.trim();
@@ -444,11 +508,13 @@
       const lines = raw.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0);
       if (lines.length === 0) return;
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const invalid = lines.filter(l => !emailRegex.test(l));
-      if (invalid.length > 0) {
-        showError(`無効なアドレスがあります: ${invalid.slice(0, 3).join(', ')}${invalid.length > 3 ? '...' : ''}`);
-        return;
+      if (currentType === 'email') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const invalid = lines.filter(l => !emailRegex.test(l));
+        if (invalid.length > 0) {
+          showError(`無効なアドレスがあります: ${invalid.slice(0, 3).join(', ')}${invalid.length > 3 ? '...' : ''}`);
+          return;
+        }
       }
 
       const btn = document.getElementById("addBtn");
@@ -459,7 +525,7 @@
         const batch = writeBatch(db);
         lines.forEach(email => {
           const ref = doc(emailsRef);
-          batch.set(ref, { email, createdAt: serverTimestamp() });
+          batch.set(ref, { email, type: currentType, createdAt: serverTimestamp() });
         });
         await batch.commit();
         input.value = "";
