@@ -148,8 +148,8 @@
       border-radius: 10px;
       padding: 12px 14px;
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      gap: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
       transition: box-shadow 0.15s;
     }
@@ -158,16 +158,22 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
+    .email-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .email-index {
       font-size: 12px;
       font-weight: 700;
       color: #bbb;
-      min-width: 22px;
+      min-width: 20px;
       text-align: center;
+      flex-shrink: 0;
     }
 
     .email-text {
-      flex: 1;
       font-size: 14px;
       font-family: 'Courier New', monospace;
       color: #222;
@@ -176,8 +182,7 @@
 
     .row-actions {
       display: flex;
-      gap: 6px;
-      flex-shrink: 0;
+      gap: 8px;
     }
 
     .copy-btn {
@@ -355,23 +360,12 @@
     const db = getFirestore(app);
     const emailsRef = collection(db, "emails");
 
-    const syncDot = document.getElementById("syncDot");
-    const syncLabel = document.getElementById("syncLabel");
     const countLabel = document.getElementById("countLabel");
     const emailList = document.getElementById("emailList");
     const errorMsg = document.getElementById("errorMsg");
 
-    function setConnected() {
-      syncDot.className = "sync-dot connected";
-      syncLabel.textContent = "同期済み";
-      syncLabel.style.color = "#22c55e";
-    }
+    function setSyncing() {}
 
-    function setSyncing() {
-      syncDot.className = "sync-dot syncing";
-      syncLabel.textContent = "同期中...";
-      syncLabel.style.color = "#f59e0b";
-    }
 
     function showError(msg) {
       errorMsg.textContent = msg;
@@ -387,8 +381,10 @@
       }
       emailList.innerHTML = emails.map((item, i) => `
         <div class="email-row" id="row-${item.id}">
-          <div class="email-index">${i + 1}</div>
-          <div class="email-text">${escapeHtml(item.email)}</div>
+          <div class="email-top">
+            <div class="email-index">${i + 1}</div>
+            <div class="email-text">${escapeHtml(item.email)}</div>
+          </div>
           <div class="row-actions">
             <button class="copy-btn" id="copy-${item.id}" onclick="copyEmail('${item.id}', '${escapeAttr(item.email)}')">コピー</button>
             <button class="delete-btn" onclick="deleteEmail('${item.id}')">削除</button>
@@ -410,11 +406,7 @@
     onSnapshot(q, (snapshot) => {
       const emails = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       render(emails);
-      setConnected();
     }, (err) => {
-      syncDot.className = "sync-dot";
-      syncLabel.textContent = "エラー";
-      syncLabel.style.color = "#ef4444";
       console.error(err);
     });
 
