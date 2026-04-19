@@ -202,7 +202,9 @@
     }
 
     .copy-btn.copied {
-      background: #22c55e;
+      background: #fff;
+      color: #4a6cf7;
+      border: 1.5px solid #4a6cf7;
     }
 
     .delete-btn {
@@ -503,7 +505,7 @@
         if (btn) {
           btn.textContent = 'コピー済';
           btn.classList.add('copied');
-          setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1500);
+          setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1000);
         }
       } catch (e) {
         showError('クリップボードへのコピーに失敗しました');
