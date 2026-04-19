@@ -420,7 +420,7 @@
             <div class="drag-handle" data-id="${item.id}">☰</div>
           </div>
           <div class="row-actions">
-            <button class="copy-btn" id="copy-${item.id}" onclick="copyEmail('${item.id}', ${JSON.stringify(escapeHtml(item.email))})">コピー</button>
+            <button class="copy-btn" id="copy-${item.id}" onclick="copyEmail('${item.id}')">コピー</button>
             <button class="delete-btn" onclick="deleteEmail('${item.id}')">削除</button>
           </div>
         </div>`).join('');
@@ -494,9 +494,11 @@
       save();
     };
 
-    window.copyEmail = async function(id, email) {
+    window.copyEmail = async function(id) {
+      const item = records.find(r => r.id === id);
+      if (!item) return;
       try {
-        await navigator.clipboard.writeText(email);
+        await navigator.clipboard.writeText(item.email);
         const btn = document.getElementById(`copy-${id}`);
         if (btn) {
           btn.textContent = 'コピー済';
