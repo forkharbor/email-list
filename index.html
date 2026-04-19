@@ -125,10 +125,16 @@
       border-radius: 10px;
       padding: 12px 14px;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       gap: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
       transition: box-shadow 0.15s, transform 0.18s ease;
+    }
+
+    .email-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .email-row:hover {
@@ -408,13 +414,15 @@
 
       listEl.innerHTML = records.map((item, i) => `
         <div class="email-row" data-id="${item.id}">
-          <div class="email-index">${i + 1}</div>
-          <div class="email-text">${escapeHtml(item.email)}</div>
+          <div class="email-top">
+            <div class="email-index">${i + 1}</div>
+            <div class="email-text">${escapeHtml(item.email)}</div>
+            <div class="drag-handle" data-id="${item.id}">☰</div>
+          </div>
           <div class="row-actions">
             <button class="copy-btn" id="copy-${item.id}" onclick="copyEmail('${item.id}', ${JSON.stringify(escapeHtml(item.email))})">コピー</button>
             <button class="delete-btn" onclick="deleteEmail('${item.id}')">削除</button>
           </div>
-          <div class="drag-handle" data-id="${item.id}">☰</div>
         </div>`).join('');
 
       if (reorderMode) {
