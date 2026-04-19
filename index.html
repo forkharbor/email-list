@@ -503,7 +503,7 @@
     // ── 並び替えモード ──
     function enterReorderMode() {
       reorderMode = true;
-      document.getElementById('btnDoneReorder').style.display = '';
+      document.getElementById('btnDoneReorder').style.display = 'inline-block';
       document.getElementById('deleteAllBtn').style.display = 'none';
       render();
       if (navigator.vibrate) navigator.vibrate(40);
@@ -526,6 +526,7 @@
       ghost.style.left  = `${rect.left}px`;
       ghost.style.top   = `${rect.top}px`;
       ghost.style.width = `${rect.width}px`;
+      ghost.querySelector('.row-actions').style.display = 'none';
       document.body.appendChild(ghost);
       cardEl.classList.add('dragging');
       dragState = {
