@@ -448,10 +448,11 @@
       btn.disabled = true;
 
       try {
+        const now = Date.now();
         const batch = writeBatch(db);
-        lines.forEach(email => {
+        lines.forEach((email, index) => {
           const ref = doc(emailsRef);
-          batch.set(ref, { email, createdAt: serverTimestamp() });
+          batch.set(ref, { email, createdAt: now + index });
         });
         await batch.commit();
         input.value = "";
